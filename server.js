@@ -1,15 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 3001;
 
 // CORS configuration
 app.use(cors({
-    origin: '*', // Allow all origins for now
-    methods: ['GET', 'POST', 'OPTIONS'],
+    origin: '*',
+    methods: ['GET', 'OPTIONS'],
     allowedHeaders: ['Content-Type']
 }));
 
@@ -22,48 +21,37 @@ const db = new sqlite3.Database('./database.sqlite', (err) => {
         console.error('Error connecting to SQLite database:', err);
     } else {
         console.log('Connected to SQLite database.');
-        // Create transfers table if it doesn't exist
-        db.run(`CREATE TABLE IF NOT EXISTS transfers (
+        // Create architectures table if it doesn't exist
+        db.run(`CREATE TABLE IF NOT EXISTS architectures (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            fromChain TEXT NOT NULL,
-            toChain TEXT NOT NULL,
-            amount REAL NOT NULL,
-            carbonSaved REAL NOT NULL,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            name TEXT NOT NULL,
+            energyPerValidator REAL NOT NULL,
+            co2PerValidator REAL NOT NULL,
+            co2PerTransaction REAL NOT NULL,
+            throughput REAL NOT NULL,
+            finality REAL NOT NULL,
+            energyEfficiency REAL NOT NULL,
+            validatorCount INTEGER NOT NULL,
+            emissions TEXT NOT NULL
         )`, (err) => {
             if (err) {
                 console.error('Error creating table:', err);
             } else {
-                // Add some test data if the table is empty
-                db.get('SELECT COUNT(*) as count FROM transfers', [], (err, row) => {
+                // Add architecture data if the table is empty
+                db.get('SELECT COUNT(*) as count FROM architectures', [], (err, row) => {
                     if (err) {
                         console.error('Error checking table:', err);
                     } else if (row.count === 0) {
-                        console.log('Adding test data...');
-                        const testData = [
-                            // Avalanche subnet transfers (low CO₂)
-                            ['avalanche', 'fuji', 1000, 50],
-                            ['fuji', 'avalanche', 500, 25],
-                            ['avalanche', 'fuji', 2000, 100],
-                            
-                            // Traditional bridge transfers (high CO₂)
-                            ['ethereum', 'avalanche', 3000, 300],
-                            ['avalanche', 'ethereum', 1500, 150],
-                            ['polygon', 'avalanche', 2500, 250],
-                            ['avalanche', 'polygon', 1800, 180],
-                            
-                            // More subnet transfers (low CO₂)
-                            ['fuji', 'avalanche', 1200, 60],
-                            ['avalanche', 'fuji', 800, 40],
-                            
-                            // More traditional bridge transfers (high CO₂)
-                            ['arbitrum', 'avalanche', 2200, 220],
-                            ['avalanche', 'optimism', 1700, 170]
+                        console.log('Adding architecture data...');
+                        const architectures = [
+                            ['Avalanche (Subnets + ICTT)', 0.2, 0.12, 0.0001, 4500, 2, 0.2, 100, 'Lower'],
+                            ['Ethereum (PoS + Bridges)', 0.4, 0.24, 0.0003, 20, 30, 0.05, 100000, 'Medium'],
+                            ['Solana (PoH + Tower BFT)', 0.3, 0.18, 0.0002, 50000, 1, 0.1, 1000, 'Low']
                         ];
-                        testData.forEach(data => {
+                        architectures.forEach(arch => {
                             db.run(
-                                'INSERT INTO transfers (fromChain, toChain, amount, carbonSaved) VALUES (?, ?, ?, ?)',
-                                data
+                                'INSERT INTO architectures (name, energyPerValidator, co2PerValidator, co2PerTransaction, throughput, finality, energyEfficiency, validatorCount, emissions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                                arch
                             );
                         });
                     }
@@ -73,46 +61,44 @@ const db = new sqlite3.Database('./database.sqlite', (err) => {
     }
 });
 
-// Root route
-app.get('/', (req, res) => {
-    res.json({ message: 'Green Bridge Monitor API is running' });
-});
-
 // API Routes
-app.get('/api/transfers', (req, res) => {
-    console.log('Received request for transfers');
-    db.all('SELECT * FROM transfers ORDER BY timestamp DESC', [], (err, rows) => {
+app.get('/api/architectures', (req, res) => {
+    console.log('Received request for architectures');
+    db.all('SELECT * FROM architectures', [], (err, rows) => {
         if (err) {
             console.error('Database error:', err);
             res.status(500).json({ error: err.message });
             return;
         }
-        console.log('Sending transfers data:', rows);
+        console.log('Sending architectures data:', rows);
         res.json(rows);
     });
 });
 
-app.post('/api/transfers', (req, res) => {
-    const { fromChain, toChain, amount, carbonSaved } = req.body;
-    console.log('Received new transfer:', { fromChain, toChain, amount, carbonSaved });
-    db.run(
-        'INSERT INTO transfers (fromChain, toChain, amount, carbonSaved) VALUES (?, ?, ?, ?)',
-        [fromChain, toChain, amount, carbonSaved],
-        function(err) {
-            if (err) {
-                console.error('Database error:', err);
-                res.status(500).json({ error: err.message });
-                return;
-            }
-            console.log('Transfer inserted with ID:', this.lastID);
-            res.json({ id: this.lastID });
+app.get('/api/architectures/:id', (req, res) => {
+    const id = req.params.id;
+    console.log('Received request for architecture:', id);
+    db.get('SELECT * FROM architectures WHERE id = ?', [id], (err, row) => {
+        if (err) {
+            console.error('Database error:', err);
+            res.status(500).json({ error: err.message });
+            return;
         }
-    );
+        if (!row) {
+            res.status(404).json({ error: 'Architecture not found' });
+            return;
+        }
+        console.log('Sending architecture data:', row);
+        res.json(row);
+    });
+});
+
+// Root route
+app.get('/', (req, res) => {
+    res.json({ message: 'Green Bridge Monitor API is running' });
 });
 
 // Start server
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
-
-module.exports = app;

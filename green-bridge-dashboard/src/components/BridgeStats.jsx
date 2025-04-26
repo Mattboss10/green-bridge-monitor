@@ -22,24 +22,24 @@ ChartJS.register(
 );
 
 const BridgeStats = () => {
-    const [data, setData] = useState([]);
+    const [architectures, setArchitectures] = useState([]);
+    const [selectedArchitecture, setSelectedArchitecture] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [selectedChain, setSelectedChain] = useState('all');
-    const [timeRange, setTimeRange] = useState('7d');
 
     useEffect(() => {
         async function fetchData() {
             try {
-                // Use production URL by default, fallback to localhost for development
                 const apiUrl = import.meta.env.VITE_API_URL || 'https://green-bridge-monitor-backend.onrender.com';
                 console.log('Fetching data from:', apiUrl);
-                const res = await axios.get(`${apiUrl}/api/transfers`);
+                const res = await axios.get(`${apiUrl}/api/architectures`);
                 console.log('Received data:', res.data);
-                setData(res.data);
+                setArchitectures(res.data);
+                if (res.data.length > 0) {
+                    setSelectedArchitecture(res.data[0]);
+                }
             } catch (error) {
-                console.error('Error fetching transfers:', error);
+                console.error('Error fetching architectures:', error);
                 console.error('Error details:', error.response?.data || error.message);
-                setData([]);
             } finally {
                 setLoading(false);
             }
@@ -47,23 +47,25 @@ const BridgeStats = () => {
         fetchData();
     }, []);
 
-    const chartData = {
-        labels: data.length > 0 ? data.map(d => `${d.fromChain} → ${d.toChain}`) : ['No Data'],
+    const chartData = selectedArchitecture ? {
+        labels: ['Energy per Validator (kWh/h)', 'CO₂ per Validator (kg/h)', 'CO₂ per Transaction (g)', 
+                'Throughput (tx/sec)', 'Finality (sec)', 'Energy Efficiency (tx/kWh)'],
         datasets: [
             {
-                label: 'Tokens Bridged',
-                data: data.length > 0 ? data.map(d => parseFloat(d.amount)) : [],
+                label: selectedArchitecture.name,
+                data: [
+                    selectedArchitecture.energyPerValidator,
+                    selectedArchitecture.co2PerValidator,
+                    selectedArchitecture.co2PerTransaction,
+                    selectedArchitecture.throughput,
+                    selectedArchitecture.finality,
+                    selectedArchitecture.energyEfficiency
+                ],
                 backgroundColor: '#6366F1',
-                borderRadius: 8,
-            },
-            {
-                label: 'CO₂ Saved (g)',
-                data: data.length > 0 ? data.map(d => d.carbonSaved) : [],
-                backgroundColor: '#10B981',
                 borderRadius: 8,
             }
         ]
-    };
+    } : null;
 
     const chartOptions = {
         responsive: true,
@@ -80,7 +82,7 @@ const BridgeStats = () => {
             },
             title: {
                 display: true,
-                text: 'Bridge Transfers and CO₂ Savings',
+                text: 'Blockchain Architecture Comparison',
                 color: '#F9FAFB',
                 font: {
                     size: 20,
@@ -93,16 +95,10 @@ const BridgeStats = () => {
                 bodyColor: '#E5E7EB',
                 callbacks: {
                     label: function(context) {
-                        let label = context.dataset.label || '';
-                        if (label) {
-                            label += ': ';
-                        }
-                        if (context.dataset.label === 'CO₂ Saved (g)') {
-                            label += context.parsed.y + ' grams CO₂ saved';
-                        } else {
-                            label += context.parsed.y;
-                        }
-                        return label;
+                        const label = context.dataset.label || '';
+                        const value = context.parsed.y;
+                        const unit = context.label.split('(')[1].replace(')', '');
+                        return `${label}: ${value} ${unit}`;
                     }
                 }
             }
@@ -134,7 +130,7 @@ const BridgeStats = () => {
                 {/* Test Data Warning */}
                 <div className="bg-yellow-900/50 border border-yellow-800 rounded-xl p-4">
                     <p className="text-yellow-200 text-sm">
-                        ⚠️ This dashboard is currently displaying test data for demonstration purposes. The numbers shown are not real bridge transfers.
+                        ⚠️ This dashboard is currently displaying test data for demonstration purposes. The numbers shown are estimates based on public data.
                     </p>
                 </div>
 
@@ -142,31 +138,18 @@ const BridgeStats = () => {
                 <div className="bg-gray-800 rounded-xl shadow-lg p-6">
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-300 mb-1">Filter by Chain</label>
+                            <label className="block text-sm font-medium text-gray-300 mb-1">Select Architecture</label>
                             <select
-                                value={selectedChain}
-                                onChange={(e) => setSelectedChain(e.target.value)}
+                                value={selectedArchitecture?.id || ''}
+                                onChange={(e) => {
+                                    const arch = architectures.find(a => a.id === parseInt(e.target.value));
+                                    setSelectedArchitecture(arch);
+                                }}
                                 className="w-full bg-gray-700 text-gray-200 rounded-lg border-gray-600 focus:border-indigo-500 focus:ring-indigo-500"
                             >
-                                <option value="all">All Chains</option>
-                                <option value="avalanche">Avalanche (L1)</option>
-                                <option value="fuji">Fuji (L1)</option>
-                                <option value="ethereum">Ethereum</option>
-                                <option value="polygon">Polygon</option>
-                                <option value="arbitrum">Arbitrum</option>
-                                <option value="optimism">Optimism</option>
-                            </select>
-                        </div>
-                        <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-300 mb-1">Time Range</label>
-                            <select
-                                value={timeRange}
-                                onChange={(e) => setTimeRange(e.target.value)}
-                                className="w-full bg-gray-700 text-gray-200 rounded-lg border-gray-600 focus:border-indigo-500 focus:ring-indigo-500"
-                            >
-                                <option value="7d">Last 7 days</option>
-                                <option value="30d">Last 30 days</option>
-                                <option value="all">All time</option>
+                                {architectures.map(arch => (
+                                    <option key={arch.id} value={arch.id}>{arch.name}</option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -175,7 +158,7 @@ const BridgeStats = () => {
                 {/* Chart Card */}
                 <div className="bg-gray-800 rounded-xl shadow-lg p-6">
                     <div className="h-[500px]">
-                        <Bar options={chartOptions} data={chartData} />
+                        {chartData && <Bar options={chartOptions} data={chartData} />}
                     </div>
                 </div>
 
@@ -183,20 +166,22 @@ const BridgeStats = () => {
                 <div className="bg-gray-800 rounded-xl shadow-lg p-6">
                     <h2 className="text-xl font-semibold text-gray-200 mb-4">📖 How to Read This Graph</h2>
                     <p className="text-gray-400 mb-4">
-                        This dashboard compares the environmental impact of token transfers between Avalanche subnets (using Avalanche Warp Messaging) 
-                        versus traditional cross-chain bridges (like those on Ethereum). The blue bars show the number of tokens bridged, 
-                        and the green bars show the estimated grams of CO₂ saved by using Avalanche's native cross-subnet communication.
+                        This dashboard compares the environmental impact and performance metrics of different blockchain architectures. 
+                        The blue bars show various metrics for the selected architecture, including energy consumption, CO₂ emissions, 
+                        and performance characteristics.
                     </p>
                     <h3 className="text-lg font-semibold text-gray-200 mb-2">Methodology</h3>
                     <p className="text-gray-400 mb-4">
-                        The CO₂ savings are calculated by comparing the energy consumption of:
+                        The metrics are calculated based on:
                     </p>
                     <ul className="list-disc list-inside text-gray-400 mb-4 space-y-2">
-                        <li>Traditional cross-chain bridges (which require multiple transactions and validators)</li>
-                        <li>Avalanche Warp Messaging (which uses native subnet communication)</li>
+                        <li>Average energy consumption per validator</li>
+                        <li>Transaction throughput and finality times</li>
+                        <li>Validator set size and requirements</li>
+                        <li>Architecture-specific consensus mechanisms</li>
                     </ul>
                     <p className="text-gray-500 text-sm">
-                        Sustainability estimates are provided by the 
+                        Sustainability estimates are based on public data and research from the 
                         <a href="https://carbon-ratings.com" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline ml-1">
                             Crypto Carbon Ratings Institute (CCRI)
                         </a>.
