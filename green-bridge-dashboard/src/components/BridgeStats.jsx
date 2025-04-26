@@ -149,8 +149,12 @@ const BridgeStats = () => {
                                 className="w-full bg-gray-700 text-gray-200 rounded-lg border-gray-600 focus:border-indigo-500 focus:ring-indigo-500"
                             >
                                 <option value="all">All Chains</option>
-                                <option value="avalanche">Avalanche</option>
-                                <option value="fuji">Fuji</option>
+                                <option value="avalanche">Avalanche (L1)</option>
+                                <option value="fuji">Fuji (L1)</option>
+                                <option value="ethereum">Ethereum</option>
+                                <option value="polygon">Polygon</option>
+                                <option value="arbitrum">Arbitrum</option>
+                                <option value="optimism">Optimism</option>
                             </select>
                         </div>
                         <div className="flex-1">
@@ -179,9 +183,18 @@ const BridgeStats = () => {
                 <div className="bg-gray-800 rounded-xl shadow-lg p-6">
                     <h2 className="text-xl font-semibold text-gray-200 mb-4">📖 How to Read This Graph</h2>
                     <p className="text-gray-400 mb-4">
-                        Each bar represents a token transfer between Avalanche subnets. The blue bars show the number of tokens bridged, 
-                        and the green bars show the estimated grams of CO₂ saved by using Avalanche Warp Messaging instead of an external bridge.
+                        This dashboard compares the environmental impact of token transfers between Avalanche subnets (using Avalanche Warp Messaging) 
+                        versus traditional cross-chain bridges (like those on Ethereum). The blue bars show the number of tokens bridged, 
+                        and the green bars show the estimated grams of CO₂ saved by using Avalanche's native cross-subnet communication.
                     </p>
+                    <h3 className="text-lg font-semibold text-gray-200 mb-2">Methodology</h3>
+                    <p className="text-gray-400 mb-4">
+                        The CO₂ savings are calculated by comparing the energy consumption of:
+                    </p>
+                    <ul className="list-disc list-inside text-gray-400 mb-4 space-y-2">
+                        <li>Traditional cross-chain bridges (which require multiple transactions and validators)</li>
+                        <li>Avalanche Warp Messaging (which uses native subnet communication)</li>
+                    </ul>
                     <p className="text-gray-500 text-sm">
                         Sustainability estimates are provided by the 
                         <a href="https://carbon-ratings.com" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline ml-1">

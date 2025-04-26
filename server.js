@@ -41,16 +41,24 @@ const db = new sqlite3.Database('./database.sqlite', (err) => {
                     } else if (row.count === 0) {
                         console.log('Adding test data...');
                         const testData = [
-                            ['fuji', 'chain', 1000, 50],
-                            ['chain', 'fuji', 500, 25],
-                            ['fuji', 'chain', 2000, 100],
-                            ['avalanche', 'fuji', 3000, 150],
-                            ['fuji', 'avalanche', 1500, 75],
-                            ['chain', 'avalanche', 2500, 125],
-                            ['avalanche', 'chain', 1800, 90],
-                            ['fuji', 'chain', 1200, 60],
-                            ['chain', 'fuji', 800, 40],
-                            ['avalanche', 'fuji', 2200, 110]
+                            // Avalanche subnet transfers (low CO₂)
+                            ['avalanche', 'fuji', 1000, 50],
+                            ['fuji', 'avalanche', 500, 25],
+                            ['avalanche', 'fuji', 2000, 100],
+                            
+                            // Traditional bridge transfers (high CO₂)
+                            ['ethereum', 'avalanche', 3000, 300],
+                            ['avalanche', 'ethereum', 1500, 150],
+                            ['polygon', 'avalanche', 2500, 250],
+                            ['avalanche', 'polygon', 1800, 180],
+                            
+                            // More subnet transfers (low CO₂)
+                            ['fuji', 'avalanche', 1200, 60],
+                            ['avalanche', 'fuji', 800, 40],
+                            
+                            // More traditional bridge transfers (high CO₂)
+                            ['arbitrum', 'avalanche', 2200, 220],
+                            ['avalanche', 'optimism', 1700, 170]
                         ];
                         testData.forEach(data => {
                             db.run(
