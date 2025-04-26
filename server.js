@@ -54,14 +54,6 @@ app.post('/api/transfers', (req, res) => {
     );
 });
 
-// Serve static files from the Vite build directory
-app.use(express.static(path.join(__dirname, 'green-bridge-dashboard/dist')));
-
-// Handle client-side routing
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'green-bridge-dashboard/dist/index.html'));
-});
-
 // Start server
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
