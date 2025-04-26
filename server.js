@@ -43,7 +43,14 @@ const db = new sqlite3.Database('./database.sqlite', (err) => {
                         const testData = [
                             ['fuji', 'chain', 1000, 50],
                             ['chain', 'fuji', 500, 25],
-                            ['fuji', 'chain', 2000, 100]
+                            ['fuji', 'chain', 2000, 100],
+                            ['avalanche', 'fuji', 3000, 150],
+                            ['fuji', 'avalanche', 1500, 75],
+                            ['chain', 'avalanche', 2500, 125],
+                            ['avalanche', 'chain', 1800, 90],
+                            ['fuji', 'chain', 1200, 60],
+                            ['chain', 'fuji', 800, 40],
+                            ['avalanche', 'fuji', 2200, 110]
                         ];
                         testData.forEach(data => {
                             db.run(

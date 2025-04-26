@@ -131,6 +131,13 @@ const BridgeStats = () => {
     return (
         <div className="flex-1 w-full max-w-7xl mx-auto px-4 py-8">
             <div className="space-y-6">
+                {/* Test Data Warning */}
+                <div className="bg-yellow-900/50 border border-yellow-800 rounded-xl p-4">
+                    <p className="text-yellow-200 text-sm">
+                        ⚠️ This dashboard is currently displaying test data for demonstration purposes. The numbers shown are not real bridge transfers.
+                    </p>
+                </div>
+
                 {/* Filters Card */}
                 <div className="bg-gray-800 rounded-xl shadow-lg p-6">
                     <div className="flex flex-col md:flex-row gap-4">
