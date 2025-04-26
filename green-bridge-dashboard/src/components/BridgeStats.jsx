@@ -30,7 +30,9 @@ const BridgeStats = () => {
     useEffect(() => {
         async function fetchData() {
             try {
-                const res = await axios.get('http://localhost:3001/api/transfers');
+                // Use production URL by default, fallback to localhost for development
+                const apiUrl = import.meta.env.VITE_API_URL || 'https://green-bridge-monitor-backend.onrender.com';
+                const res = await axios.get(`${apiUrl}/api/transfers`);
                 setData(res.data);
             } catch (error) {
                 console.error('Error fetching transfers:', error);
