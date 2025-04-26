@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 // Database setup
-const db = new sqlite3.Database('./database.sqlite', (err) => {
+const db = new sqlite3.Database(process.env.DATABASE_URL || './database.sqlite', (err) => {
     if (err) {
         console.error('Error connecting to SQLite database:', err);
     } else {
@@ -63,6 +63,10 @@ app.get('*', (req, res) => {
 });
 
 // Start server
-app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
-});
+if (require.main === module) {
+    app.listen(port, () => {
+        console.log(`Server running on http://localhost:${port}`);
+    });
+}
+
+module.exports = app;
