@@ -1,28 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 
-// 🛠️ Register Chart.js components
+// 🛠️ Register necessary ChartJS modules
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend
 );
+
 const BridgeStats = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -43,26 +41,70 @@ const BridgeStats = () => {
     }, []);
 
     const chartData = {
-        labels: data.length > 0 ? data.map(d => new Date(d.timestamp * 1000).toLocaleDateString()) : [],
+        labels: data.length > 0 ? data.map(d => `${d.fromChain} → ${d.toChain}`) : ['No Data'],
         datasets: [
             {
                 label: 'Tokens Bridged',
                 data: data.length > 0 ? data.map(d => parseFloat(d.amount)) : [],
-                borderColor: 'blue',
-                backgroundColor: 'lightblue',
+                backgroundColor: 'rgba(59, 130, 246, 0.7)', // blue-500
             },
             {
                 label: 'CO₂ Saved (g)',
                 data: data.length > 0 ? data.map(d => d.carbonSaved) : [],
-                borderColor: 'green',
-                backgroundColor: 'lightgreen',
+                backgroundColor: 'rgba(34, 197, 94, 0.7)', // green-500
             }
         ]
     };
 
+    const chartOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    color: '#374151' // gray-700
+                }
+            },
+            title: {
+                display: true,
+                text: 'Bridge Transfers and CO₂ Savings',
+                color: '#111827', // gray-900
+                font: {
+                    size: 24
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.dataset.label === 'CO₂ Saved (g)') {
+                            label += context.parsed.y + ' grams CO₂ saved';
+                        } else {
+                            label += context.parsed.y;
+                        }
+                        return label;
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                ticks: { color: '#374151' },
+                grid: { color: '#E5E7EB' }
+            },
+            y: {
+                ticks: { color: '#374151' },
+                grid: { color: '#E5E7EB' }
+            }
+        }
+    };
+
     if (loading) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-white">
                 <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
                 <p className="mt-4 text-blue-600 font-bold">Loading Green Bridge Monitor...</p>
             </div>
@@ -70,15 +112,26 @@ const BridgeStats = () => {
     }
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-6">
-            <h1 className="text-3xl font-bold mb-4 text-center">🌿 Green Bridge Monitor 🌿</h1>
-            {data.length > 0 ? (
-                <div className="w-full max-w-4xl">
-                    <Line data={chartData} />
-                </div>
-            ) : (
-                <p className="text-gray-600 text-lg text-center">No bridge events yet. Waiting for activity...</p>
-            )}
+        <div className="min-h-screen bg-white p-8 flex flex-col items-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-6 text-center">🌿 Green Bridge Monitor 🌿</h1>
+
+            <div className="max-w-6xl w-full">
+                <Bar options={chartOptions} data={chartData} />
+            </div>
+
+            <div className="mt-8 max-w-4xl text-center text-gray-700">
+                <h2 className="text-2xl font-semibold mb-2">📖 How to Read This Graph</h2>
+                <p className="mb-4">
+                    Each bar represents a token transfer between Avalanche subnets. The blue bars show the number of tokens bridged, 
+                    and the green bars show the estimated grams of CO₂ saved by using Avalanche Warp Messaging instead of an external bridge.
+                </p>
+                <p className="text-gray-500 text-sm">
+                    Sustainability estimates are provided by the 
+                    <a href="https://carbon-ratings.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline ml-1">
+                        Crypto Carbon Ratings Institute (CCRI)
+                    </a>.
+                </p>
+            </div>
         </div>
     );
 };
