@@ -32,10 +32,13 @@ const BridgeStats = () => {
             try {
                 // Use production URL by default, fallback to localhost for development
                 const apiUrl = import.meta.env.VITE_API_URL || 'https://green-bridge-monitor-backend.onrender.com';
+                console.log('Fetching data from:', apiUrl);
                 const res = await axios.get(`${apiUrl}/api/transfers`);
+                console.log('Received data:', res.data);
                 setData(res.data);
             } catch (error) {
                 console.error('Error fetching transfers:', error);
+                console.error('Error details:', error.response?.data || error.message);
                 setData([]);
             } finally {
                 setLoading(false);
