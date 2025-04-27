@@ -48,18 +48,13 @@ const BridgeStats = () => {
     }, []);
 
     const chartData = selectedArchitecture ? {
-        labels: ['Energy per Validator (kWh/h)', 'CO₂ per Validator (kg/h)', 'CO₂ per Transaction (g)', 
-                'Throughput (tx/sec)', 'Finality (sec)', 'Energy Efficiency (tx/kWh)'],
+        labels: ['Throughput (tx/sec)', 'Finality (seconds)'],
         datasets: [
             {
                 label: selectedArchitecture.name,
                 data: [
-                    selectedArchitecture.energyPerValidator,
-                    selectedArchitecture.co2PerValidator,
-                    selectedArchitecture.co2PerTransaction,
                     selectedArchitecture.throughput,
-                    selectedArchitecture.finality,
-                    selectedArchitecture.energyEfficiency
+                    selectedArchitecture.finality
                 ],
                 backgroundColor: '#6366F1',
                 borderRadius: 8,
@@ -82,7 +77,7 @@ const BridgeStats = () => {
             },
             title: {
                 display: true,
-                text: 'Blockchain Architecture Comparison',
+                text: 'Blockchain Performance Metrics',
                 color: '#F9FAFB',
                 font: {
                     size: 20,
@@ -138,7 +133,7 @@ const BridgeStats = () => {
                 <div className="bg-gray-800 rounded-xl shadow-lg p-6">
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-300 mb-1">Select Architecture</label>
+                            <label className="block text-sm font-medium text-gray-300 mb-1">Select Blockchain</label>
                             <select
                                 value={selectedArchitecture?.id || ''}
                                 onChange={(e) => {
@@ -155,30 +150,77 @@ const BridgeStats = () => {
                     </div>
                 </div>
 
-                {/* Chart Card */}
+                {/* Performance Chart */}
                 <div className="bg-gray-800 rounded-xl shadow-lg p-6">
                     <div className="h-[500px]">
                         {chartData && <Bar options={chartOptions} data={chartData} />}
                     </div>
                 </div>
 
+                {/* Detailed Metrics */}
+                {selectedArchitecture && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Left Column */}
+                        <div className="bg-gray-800 rounded-xl shadow-lg p-6">
+                            <h3 className="text-lg font-semibold text-gray-200 mb-4">Consensus & Efficiency</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <p className="text-sm text-gray-400">Consensus Mechanism</p>
+                                    <p className="text-gray-200">{selectedArchitecture.consensus}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-400">Energy Efficiency</p>
+                                    <p className="text-gray-200">{selectedArchitecture.energyEfficiency}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-400">CO₂ Emissions</p>
+                                    <p className="text-gray-200">{selectedArchitecture.co2Emissions}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right Column */}
+                        <div className="bg-gray-800 rounded-xl shadow-lg p-6">
+                            <h3 className="text-lg font-semibold text-gray-200 mb-4">Ecosystem & Adoption</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <p className="text-sm text-gray-400">Developer Ecosystem</p>
+                                    <p className="text-gray-200">{selectedArchitecture.developerEcosystem}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-400">Smart Contract Support</p>
+                                    <p className="text-gray-200">{selectedArchitecture.smartContractSupport}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-400">Decentralization</p>
+                                    <p className="text-gray-200">{selectedArchitecture.decentralization}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-400">Network Adoption</p>
+                                    <p className="text-gray-200">{selectedArchitecture.networkAdoption}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Info Card */}
                 <div className="bg-gray-800 rounded-xl shadow-lg p-6">
-                    <h2 className="text-xl font-semibold text-gray-200 mb-4">📖 How to Read This Graph</h2>
+                    <h2 className="text-xl font-semibold text-gray-200 mb-4">📖 How to Read This Dashboard</h2>
                     <p className="text-gray-400 mb-4">
-                        This dashboard compares the environmental impact and performance metrics of different blockchain architectures. 
-                        The blue bars show various metrics for the selected architecture, including energy consumption, CO₂ emissions, 
-                        and performance characteristics.
+                        This dashboard compares different blockchain architectures across multiple metrics, including 
+                        performance, energy efficiency, and ecosystem health. The chart shows key performance metrics, 
+                        while the detailed view provides additional context about each blockchain's characteristics.
                     </p>
                     <h3 className="text-lg font-semibold text-gray-200 mb-2">Methodology</h3>
                     <p className="text-gray-400 mb-4">
                         The metrics are calculated based on:
                     </p>
                     <ul className="list-disc list-inside text-gray-400 mb-4 space-y-2">
-                        <li>Average energy consumption per validator</li>
-                        <li>Transaction throughput and finality times</li>
-                        <li>Validator set size and requirements</li>
-                        <li>Architecture-specific consensus mechanisms</li>
+                        <li>Consensus mechanism efficiency and energy requirements</li>
+                        <li>Network performance and scalability</li>
+                        <li>Developer activity and ecosystem growth</li>
+                        <li>Network decentralization and adoption metrics</li>
                     </ul>
                     <p className="text-gray-500 text-sm">
                         Sustainability estimates are based on public data and research from the 
