@@ -48,13 +48,34 @@ const BridgeStats = () => {
     }, []);
 
     const chartData = selectedArchitecture ? {
-        labels: ['Throughput (tx/sec)', 'Finality (seconds)'],
+        labels: [
+            'Throughput (tx/sec)',
+            'Finality (seconds)',
+            'Energy Efficiency',
+            'CO₂ Emissions',
+            'Developer Ecosystem',
+            'Decentralization',
+            'Network Adoption'
+        ],
         datasets: [
             {
                 label: selectedArchitecture.name,
                 data: [
                     selectedArchitecture.throughput,
-                    selectedArchitecture.finality
+                    selectedArchitecture.finality,
+                    // Convert qualitative metrics to numerical values for chart
+                    selectedArchitecture.energyEfficiency.includes('High') ? 3 : 
+                    selectedArchitecture.energyEfficiency.includes('Medium') ? 2 : 1,
+                    selectedArchitecture.co2Emissions.includes('Low') ? 3 : 
+                    selectedArchitecture.co2Emissions.includes('Medium') ? 2 : 1,
+                    selectedArchitecture.developerEcosystem.includes('Very Large') ? 4 :
+                    selectedArchitecture.developerEcosystem.includes('Large') ? 3 :
+                    selectedArchitecture.developerEcosystem.includes('Growing') ? 2 : 1,
+                    selectedArchitecture.decentralization.includes('High') ? 3 :
+                    selectedArchitecture.decentralization.includes('Medium') ? 2 : 1,
+                    selectedArchitecture.networkAdoption.includes('Very High') ? 4 :
+                    selectedArchitecture.networkAdoption.includes('High') ? 3 :
+                    selectedArchitecture.networkAdoption.includes('Medium') ? 2 : 1
                 ],
                 backgroundColor: '#6366F1',
                 borderRadius: 8,
@@ -77,7 +98,7 @@ const BridgeStats = () => {
             },
             title: {
                 display: true,
-                text: 'Blockchain Performance Metrics',
+                text: 'Blockchain Architecture Comparison',
                 color: '#F9FAFB',
                 font: {
                     size: 20,
@@ -92,8 +113,24 @@ const BridgeStats = () => {
                     label: function(context) {
                         const label = context.dataset.label || '';
                         const value = context.parsed.y;
-                        const unit = context.label.split('(')[1].replace(')', '');
-                        return `${label}: ${value} ${unit}`;
+                        const metric = context.label.split('(')[0].trim();
+                        
+                        // Return qualitative values for non-numerical metrics
+                        if (metric === 'Energy Efficiency') {
+                            return `${label}: ${selectedArchitecture.energyEfficiency}`;
+                        } else if (metric === 'CO₂ Emissions') {
+                            return `${label}: ${selectedArchitecture.co2Emissions}`;
+                        } else if (metric === 'Developer Ecosystem') {
+                            return `${label}: ${selectedArchitecture.developerEcosystem}`;
+                        } else if (metric === 'Decentralization') {
+                            return `${label}: ${selectedArchitecture.decentralization}`;
+                        } else if (metric === 'Network Adoption') {
+                            return `${label}: ${selectedArchitecture.networkAdoption}`;
+                        } else {
+                            // Return numerical values with units for throughput and finality
+                            const unit = context.label.split('(')[1].replace(')', '');
+                            return `${label}: ${value} ${unit}`;
+                        }
                     }
                 }
             }
@@ -150,7 +187,7 @@ const BridgeStats = () => {
                     </div>
                 </div>
 
-                {/* Performance Chart */}
+                {/* Chart Card */}
                 <div className="bg-gray-800 rounded-xl shadow-lg p-6">
                     <div className="h-[500px]">
                         {chartData && <Bar options={chartOptions} data={chartData} />}
@@ -159,21 +196,18 @@ const BridgeStats = () => {
 
                 {/* Info Card */}
                 <div className="bg-gray-800 rounded-xl shadow-lg p-6">
-                    <h2 className="text-xl font-semibold text-gray-200 mb-4">📖 How to Read This Dashboard</h2>
+                    <h2 className="text-xl font-semibold text-gray-200 mb-4">📖 How to Read This Graph</h2>
                     <p className="text-gray-400 mb-4">
-                        This dashboard compares different blockchain architectures across multiple metrics, including 
-                        performance, energy efficiency, and ecosystem health. The chart shows key performance metrics, 
-                        while the detailed view provides additional context about each blockchain's characteristics.
-                    </p>
-                    <h3 className="text-lg font-semibold text-gray-200 mb-2">Methodology</h3>
-                    <p className="text-gray-400 mb-4">
-                        The metrics are calculated based on:
+                        This graph compares different blockchain architectures across multiple metrics. The blue bars show:
                     </p>
                     <ul className="list-disc list-inside text-gray-400 mb-4 space-y-2">
-                        <li>Consensus mechanism efficiency and energy requirements</li>
-                        <li>Network performance and scalability</li>
-                        <li>Developer activity and ecosystem growth</li>
-                        <li>Network decentralization and adoption metrics</li>
+                        <li>Throughput: Transactions per second</li>
+                        <li>Finality: Time to confirm transactions</li>
+                        <li>Energy Efficiency: Overall energy consumption</li>
+                        <li>CO₂ Emissions: Environmental impact</li>
+                        <li>Developer Ecosystem: Size and activity of developer community</li>
+                        <li>Decentralization: Distribution of network control</li>
+                        <li>Network Adoption: Current usage and growth</li>
                     </ul>
                     <p className="text-gray-500 text-sm">
                         Sustainability estimates are based on public data and research from the 
